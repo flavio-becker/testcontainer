@@ -1,0 +1,15 @@
+{
+    "namespace": "com.testcontainers.avro",
+    "type": "record",
+    "name": "ModeloAvro1",
+    "fields": [
+        {
+            "name": "id",
+            "type": {"type": "string", "logicalType": "uuid"}
+        },
+        {
+            "name": "descricao",
+            "type": "string"
+        }
+    ]
+}
