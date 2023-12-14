@@ -22,6 +22,22 @@ public class TestContainerServiceAvro {
 
         Optional<Employee> employeeOptional = employeeDao.findById(employee.getId());
 
+
+        String saldo;
+        if (employeeOptional.map(Employee::getFirstname).get().equalsIgnoreCase("Flavio") ) {
+            saldo = "1000";
+        } else if (employeeOptional.map(Employee::getFirstname).get().equalsIgnoreCase("Jose")) {
+            saldo = "2000";
+        } else if (employeeOptional.map(Employee::getFirstname).get().equalsIgnoreCase("Maria")) {
+            saldo = "10000";
+        } else {
+            saldo = "0";
+        }
+
+        employeeDao.save(employeeOptional.get()
+                .withSaldo(saldo));
+
+
         ModeloAvro1 employee2 = ModeloAvro1.newBuilder()
                 .setId(String.valueOf(employeeOptional.map(Employee::getId).orElse(String.valueOf(UUID.randomUUID()))))
                 .setDescricao(employeeOptional.map(Employee::getFirstname).orElse("Sem nome"))
