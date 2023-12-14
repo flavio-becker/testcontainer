@@ -3,20 +3,28 @@ package com.testcontainers.awstestcontainers;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBMapper;
 import com.amazonaws.services.dynamodbv2.model.CreateTableRequest;
+import com.amazonaws.services.dynamodbv2.model.CreateTableResult;
 import com.amazonaws.services.dynamodbv2.model.ProvisionedThroughput;
 import com.testcontainers.domain.entities.Employee;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.test.context.TestPropertySource;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.utility.DockerImageName;
 
 import static org.testcontainers.containers.localstack.LocalStackContainer.Service.DYNAMODB;
 
-public class LocalStackTestcontainers implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+@TestConfiguration
+@TestPropertySource(properties = {
+        "amazon.aws.accesskey=test1",
+        "amazon.aws.secretkey=test231"
+})
+public class LocalStackTestcontainers {
 
     @Autowired
     AmazonDynamoDB amazonDynamoDB;
@@ -29,29 +37,20 @@ public class LocalStackTestcontainers implements ApplicationContextInitializer<C
 
     static {
         localStack.start();
-    }
+        System.setProperty("amazon.dynamodb.endpoint", localStack.getEndpointOverride(DYNAMODB).toString());
 
-
-    @Override
-    public void initialize(ConfigurableApplicationContext ctx) {
-        TestPropertyValues.of(
-
-                //DYNAMODB CONFIGURATIONS PROPERTIES
-                "amazon.dynamodb.endpoint=" + localStack.getEndpointOverride(DYNAMODB).toString(),
-                "amazon.aws.accesskey=test1",
-                "amazon.aws.secretkey=test231"
-
-        ).applyTo(ctx.getEnvironment());
     }
 
     @PostConstruct
     public void init() {
         DynamoDBMapper dynamoDBMapper = new DynamoDBMapper(amazonDynamoDB);
 
-        CreateTableRequest tableEmployeeRequest = dynamoDBMapper
+        CreateTableRequest tableUserRequest = dynamoDBMapper
                 .generateCreateTableRequest(Employee.class);
-        tableEmployeeRequest.setProvisionedThroughput(
+
+        tableUserRequest.setProvisionedThroughput(
                 new ProvisionedThroughput(1L, 1L));
-        amazonDynamoDB.createTable(tableEmployeeRequest);
-    }
+
+        amazonDynamoDB.createTable(tableUserRequest);
+       }
 }

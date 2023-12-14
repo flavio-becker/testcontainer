@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+//@Profile({ "!test" })
 @Configuration
 public class DynamoDBConfig {
 
@@ -21,12 +22,15 @@ public class DynamoDBConfig {
     @Value("${amazon.aws.secretkey}")
     private String amazonAWSSecretKey;
 
+    @Value("${aws.region}")
+    private String region;
+
     @Bean
     AmazonDynamoDB amazonDynamoDB() {
-        AwsClientBuilder.EndpointConfiguration endpointConfiguration = new AwsClientBuilder.EndpointConfiguration(amazonDynamoDBEndpoint, "");
 
-        return AmazonDynamoDBClientBuilder.standard()
-                .withEndpointConfiguration(endpointConfiguration)
+        return  AmazonDynamoDBClientBuilder.standard()
+                .withEndpointConfiguration(
+                        new AwsClientBuilder.EndpointConfiguration(amazonDynamoDBEndpoint, region))
                 .build();
     }
 

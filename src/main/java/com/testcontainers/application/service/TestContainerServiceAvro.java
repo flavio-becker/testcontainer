@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @RequiredArgsConstructor
 @Component
@@ -19,11 +20,11 @@ public class TestContainerServiceAvro {
 
     public void execute(ModeloAvro1 employee) {
 
-        Optional<Employee> employeeOptional = employeeDao.findById(Integer.valueOf(employee.getId()));
+        Optional<Employee> employeeOptional = employeeDao.findById(employee.getId());
 
         ModeloAvro1 employee2 = ModeloAvro1.newBuilder()
-                .setId(String.valueOf(employeeOptional.map(Employee::getId).orElse(99)))
-                .setDescricao(employeeOptional.map(Employee::getFirstName).orElse("Sem nome"))
+                .setId(String.valueOf(employeeOptional.map(Employee::getId).orElse(String.valueOf(UUID.randomUUID()))))
+                .setDescricao(employeeOptional.map(Employee::getFirstname).orElse("Sem nome"))
                 .build();
 
         producer.send(employee2, "employee_Topico");

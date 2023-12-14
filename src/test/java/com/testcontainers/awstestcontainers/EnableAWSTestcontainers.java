@@ -9,6 +9,6 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@ContextConfiguration(initializers = LocalStackTestcontainers.class)
+@ContextConfiguration(classes = LocalStackTestcontainers.class)
 public @interface EnableAWSTestcontainers {
 }

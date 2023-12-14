@@ -1,12 +1,15 @@
 package com.testcontainers;
 
 import com.testcontainers.adapters.persistence.dao.EmployeeDao;
-import com.testcontainers.awstestcontainers.EnableAWSTestcontainers;
+import com.testcontainers.awstestcontainers.LocalStackTestcontainers;
 import com.testcontainers.domain.entities.Employee;
+import com.testcontainers.kafkatestcontainers.EnableKafkaTestcontainers;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
@@ -15,40 +18,40 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
-@EnableAWSTestcontainers
+@EnableKafkaTestcontainers
+@Import(LocalStackTestcontainers.class)
 @ActiveProfiles({"test"})
 public class DynamoDBTest {
 
     @Autowired
     private EmployeeDao employeeDao;
 
-//    @BeforeEach
-//    public void setUp() {
-//        employeeDao.deleteAll();
-//    }
+    @BeforeEach
+    public void setUp() {
+        employeeDao.deleteAll();
+    }
 
 
     @Test
     void saveNewElementTest() {
-        var employeeOne = Employee.builder()
-                .id(null)
-                .firstName("Vicenzo")
-                .lastName("Racca")
+        Employee employeeOne = Employee.builder()
+                .firstname("Vicenzo")
                 .build();
 
         employeeDao.save(employeeOne);
 
+
+
         List<Employee> retrievedEmployees = employeeDao.findAll();
-        Assertions.assertThat(retrievedEmployees).hasSize(1);
-        Assertions.assertThat(retrievedEmployees.get(0)).isEqualTo(employeeOne);
+        assertThat(retrievedEmployees).hasSize(1);
+        assertThat(retrievedEmployees.get(0)).isEqualTo(employeeOne);
     }
 
     @Test
     void saveAnExistingElementTest() {
         var employeeOne = Employee.builder()
                 .id(null)
-                .firstName("Vicenzo")
-                .lastName("Racca")
+                .firstname("Vicenzo")
                 .build();
 
         employeeDao.save(employeeOne);
@@ -56,29 +59,28 @@ public class DynamoDBTest {
         List<Employee> retrievedEmployees = employeeDao.findAll();
         Assertions.assertThat(retrievedEmployees).hasSize(1);
         Assertions.assertThat(retrievedEmployees.get(0)).isEqualTo(employeeOne);
-        Assertions.assertThat(retrievedEmployees.get(0).getFirstName()).isEqualTo("Vincenzo");
+        Assertions.assertThat(retrievedEmployees.get(0).getFirstname()).isEqualTo("Vincenzo");
 
-        Employee employeeTwo = employeeOne.withFirstName("Enzo");
+        employeeOne.setFirstname("Enzo");
 
 
-        employeeDao.save(employeeTwo);
+        employeeDao.save(employeeOne);
 
         retrievedEmployees = employeeDao.findAll();
         assertThat(retrievedEmployees).hasSize(1);
         assertThat(retrievedEmployees.get(0)).isEqualTo(employeeOne);
-        assertThat(retrievedEmployees.get(0).getFirstName()).isEqualTo("Enzo");
+        assertThat(retrievedEmployees.get(0).getFirstname()).isEqualTo("Enzo");
     }
 
     @Test
     void deleteTest() {
         var employeeOne = Employee.builder()
                 .id(null)
-                .firstName("Vicenzo")
-                .lastName("Racca")
+                .firstname("Vicenzo")
                 .build();
 
         employeeDao.save(employeeOne);
-        Integer id = employeeOne.getId();
+        String id = employeeOne.getId();
         assertThat(id).isNotNull();
 
         Optional<Employee> retrievedUser = employeeDao.findById(id);

@@ -35,7 +35,7 @@ public class KafkaTestConsumerAvro {
     }
 
     public ConsumerRecords<String, GenericRecord> poll() {
-        return consumer.poll(Duration.ofSeconds(10));
+        return consumer.poll(Duration.ofSeconds(20));
     }
 
 }

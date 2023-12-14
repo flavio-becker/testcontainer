@@ -1,14 +1,18 @@
 package com.testcontainers.adapters.listeners;
 
-import com.testcontainers.adapters.producer.TestProducer;
+import com.testcontainers.adapters.persistence.dao.EmployeeDao;
 import com.testcontainers.avro.ModeloAvro1;
+import com.testcontainers.awstestcontainers.LocalStackTestcontainers;
+import com.testcontainers.domain.entities.Employee;
 import com.testcontainers.kafkatestcontainers.EnableKafkaTestcontainers;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import static com.testcontainers.kafkatestcontainers.KafkaTestcontainersInitializer.KAFKA;
@@ -17,24 +21,50 @@ import static java.util.Collections.singletonList;
 
 @SpringBootTest
 @EnableKafkaTestcontainers
-@ActiveProfiles({"test"})
+@Import({LocalStackTestcontainers.class, KafkaProducerTester.class})
+@ActiveProfiles("test")
 class ConsumerTestAvro {
 
+
     @Autowired
-    TestProducer kafkaProducer;
+    KafkaProducerTester kafkaProducerTester;
+
+
+    @Autowired
+    private EmployeeDao employeeDao;
+
+    @BeforeEach
+    public void setUp() {
+        employeeDao.deleteAll();
+    }
 
     @Test
     void shouldHandleProductPriceChangedEvent() {
 
-        ModeloAvro1 modeloAvro1 = ModeloAvro1.newBuilder()
-                .setId("1")
-                .setDescricao("TESTE_AVRO")
+        //GIVEN
+        final String ID = "9999";
+        String FIRSTNAME = "Flavio";
+
+        //preparando o Dynamo com dados para o teste
+        Employee employeeSavedynamo = Employee.builder()
+                .id(ID)
+                .firstname(FIRSTNAME)
                 .build();
 
-        kafkaProducer.send(modeloAvro1, "topico");
+        employeeDao.save(employeeSavedynamo);
 
+
+        ModeloAvro1 modeloAvro1 = ModeloAvro1.newBuilder()
+                .setId(ID)
+                .setDescricao("")
+                .build();
+
+        //WHEN
+        kafkaProducerTester.sendMessage(modeloAvro1, "topico");
+
+        //THEN
         KafkaTestConsumerAvro kafkaTestConsumer =
-                new KafkaTestConsumerAvro(KAFKA.getBootstrapServers(), "demo_test", SCHEMA_REGISTRY.getSchemaUrl());
+                new KafkaTestConsumerAvro(KAFKA.getBootstrapServers(), "test", SCHEMA_REGISTRY.getSchemaUrl());
 
         kafkaTestConsumer.subscribe(singletonList("employee_Topico"));
 
@@ -43,12 +73,12 @@ class ConsumerTestAvro {
         Assertions.assertThat(records.count())
                 .isEqualTo(1);
 
-        // As mentioned before, in this example we are using String serializers, in practice it is very common to use Avro schemas to serialize these messages
-//        records.iterator().forEachRemaining(record -> Assertions.assertThat(record.value())
-//                .isEqualTo(EmployeeEvent.builder()
-//                        .firstName("Flavio")
-//                        .lastName("Becker")
-//                        .build()));
 
+        records.iterator().forEachRemaining(record -> {
+            if (record.value() instanceof ModeloAvro1 avro1) {
+                Assertions.assertThat(avro1.getDescricao())
+                        .isEqualTo(FIRSTNAME);
+            }
+        });
     }
 }

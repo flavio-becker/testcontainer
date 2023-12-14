@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 @Slf4j
-public class EmployeeDynamoDBDao extends DynamoDBDao<Employee, Integer> implements EmployeeDao {
+public class EmployeeDynamoDBDao extends DynamoDBDao<Employee, String> implements EmployeeDao {
 
     public EmployeeDynamoDBDao(AmazonDynamoDB amazonDynamoDB, Environment env) {
         super(amazonDynamoDB, Employee.class, env);

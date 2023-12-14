@@ -12,18 +12,18 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 
-public class KafkaTestcontainersInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+public class KafkaTestcontainersInitializer /*extends LocalStackTestcontainers*/ implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     public static final Network NETWORK = Network.newNetwork();
     public static final String CONFLUENT_PLATFORM_VERSION = "7.4.1";
     public static final DockerImageName KAFKA_IMAGE =
             DockerImageName.parse("confluentinc/cp-kafka").withTag(CONFLUENT_PLATFORM_VERSION);
-    public static final KafkaContainer KAFKA =
-            new KafkaContainer(KAFKA_IMAGE)
-                    .withNetwork(NETWORK)
-                    .withKraft()
-                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", "1")
-                    .withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", "1");
+
+    public static final KafkaContainer KAFKA = new KafkaContainer(KAFKA_IMAGE)
+            .withNetwork(NETWORK)
+            .withKraft()
+            .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", "1")
+            .withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", "1");
 
     public static final SchemaRegistryContainer SCHEMA_REGISTRY =
             new SchemaRegistryContainer(CONFLUENT_PLATFORM_VERSION)
