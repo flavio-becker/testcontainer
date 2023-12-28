@@ -37,7 +37,6 @@ public class TestContainerServiceAvro {
         employeeDao.save(employeeOptional.get()
                 .withSaldo(saldo));
 
-
         ModeloAvro1 employee2 = ModeloAvro1.newBuilder()
                 .setId(String.valueOf(employeeOptional.map(Employee::getId).orElse(String.valueOf(UUID.randomUUID()))))
                 .setDescricao(employeeOptional.map(Employee::getFirstname).orElse("Sem nome"))

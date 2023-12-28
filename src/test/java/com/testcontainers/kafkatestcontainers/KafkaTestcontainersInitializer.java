@@ -12,7 +12,7 @@ import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 
-public class KafkaTestcontainersInitializer /*extends LocalStackTestcontainers*/ implements ApplicationContextInitializer<ConfigurableApplicationContext> {
+public class KafkaTestcontainersInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     public static final Network NETWORK = Network.newNetwork();
     public static final String CONFLUENT_PLATFORM_VERSION = "7.4.1";

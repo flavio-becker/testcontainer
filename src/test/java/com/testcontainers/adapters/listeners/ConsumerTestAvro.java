@@ -2,7 +2,7 @@ package com.testcontainers.adapters.listeners;
 
 import com.testcontainers.adapters.persistence.dao.EmployeeDao;
 import com.testcontainers.avro.ModeloAvro1;
-import com.testcontainers.awstestcontainers.LocalStackTestcontainers;
+import com.testcontainers.awstestcontainers.SqsConfigTest;
 import com.testcontainers.domain.entities.Employee;
 import com.testcontainers.kafkatestcontainers.EnableKafkaTestcontainers;
 import org.apache.avro.generic.GenericRecord;
@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import static com.testcontainers.kafkatestcontainers.KafkaTestcontainersInitializer.KAFKA;
 import static com.testcontainers.kafkatestcontainers.KafkaTestcontainersInitializer.SCHEMA_REGISTRY;
@@ -21,8 +22,9 @@ import static java.util.Collections.singletonList;
 
 @SpringBootTest
 @EnableKafkaTestcontainers
-@Import({LocalStackTestcontainers.class, KafkaProducerTester.class})
+@Import({KafkaProducerTester.class, SqsConfigTest.class})
 @ActiveProfiles("test")
+@SpringJUnitConfig
 class ConsumerTestAvro {
 
 
