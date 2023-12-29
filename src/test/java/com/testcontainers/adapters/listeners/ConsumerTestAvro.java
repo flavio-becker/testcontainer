@@ -2,7 +2,7 @@ package com.testcontainers.adapters.listeners;
 
 import com.testcontainers.adapters.persistence.dao.EmployeeDao;
 import com.testcontainers.avro.ModeloAvro1;
-import com.testcontainers.awstestcontainers.SqsConfigTest;
+import com.testcontainers.awstestcontainers.AWSLocalstackTestcontainers;
 import com.testcontainers.domain.entities.Employee;
 import com.testcontainers.kafkatestcontainers.EnableKafkaTestcontainers;
 import org.apache.avro.generic.GenericRecord;
@@ -22,7 +22,7 @@ import static java.util.Collections.singletonList;
 
 @SpringBootTest
 @EnableKafkaTestcontainers
-@Import({KafkaProducerTester.class, SqsConfigTest.class})
+@Import({KafkaProducerTester.class, AWSLocalstackTestcontainers.class})
 @ActiveProfiles("test")
 @SpringJUnitConfig
 class ConsumerTestAvro {
@@ -30,15 +30,8 @@ class ConsumerTestAvro {
 
     @Autowired
     KafkaProducerTester kafkaProducerTester;
-
-
     @Autowired
     private EmployeeDao employeeDao;
-
-    @BeforeEach
-    public void setUp() {
-        employeeDao.deleteAll();
-    }
 
     @Test
     void shouldHandleProductPriceChangedEvent() {

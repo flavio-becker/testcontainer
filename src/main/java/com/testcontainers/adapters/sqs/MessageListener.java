@@ -1,6 +1,6 @@
 package com.testcontainers.adapters.sqs;
 
-import org.springframework.cloud.aws.messaging.listener.annotation.SqsListener;
+import io.awspring.cloud.messaging.listener.annotation.SqsListener;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;

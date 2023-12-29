@@ -89,11 +89,29 @@
             <version>1.12.610</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/io.awspring.cloud/spring-cloud-aws-messaging -->
         <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-aws-messaging</artifactId>
-            <version>2.2.6.RELEASE</version>
+            <groupId>io.awspring.cloud</groupId>
+            <artifactId>spring-cloud-aws-messaging</artifactId>
+            <version>2.4.4</version>
         </dependency>
+
+
+        <!-- https://mvnrepository.com/artifact/io.awspring.cloud/spring-cloud-starter-aws -->
+        <dependency>
+            <groupId>io.awspring.cloud</groupId>
+            <artifactId>spring-cloud-starter-aws</artifactId>
+            <version>2.4.4</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/io.awspring.cloud/spring-cloud-aws-core -->
+        <dependency>
+            <groupId>io.awspring.cloud</groupId>
+            <artifactId>spring-cloud-aws-core</artifactId>
+            <version>3.0.2</version>
+        </dependency>
+
+
 
 
         <dependency>

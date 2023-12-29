@@ -1,7 +1,7 @@
 package com.testcontainers.adapters.sqs;
 
+import io.awspring.cloud.messaging.core.QueueMessagingTemplate;
 import lombok.RequiredArgsConstructor;
-import org.springframework.cloud.aws.messaging.core.QueueMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 @Service

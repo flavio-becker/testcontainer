@@ -1,17 +1,20 @@
 package com.testcontainers.kafkatestcontainers;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
+import org.testcontainers.containers.output.Slf4jLogConsumer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
 
+@Slf4j
 public class KafkaTestcontainersInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
     public static final Network NETWORK = Network.newNetwork();
@@ -23,7 +26,9 @@ public class KafkaTestcontainersInitializer implements ApplicationContextInitial
             .withNetwork(NETWORK)
             .withKraft()
             .withEnv("KAFKA_TRANSACTION_STATE_LOG_MIN_ISR", "1")
-            .withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", "1");
+            .withEnv("KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR", "1")
+            .withStartupTimeout(Duration.ofMinutes(2))
+            .withLogConsumer(new Slf4jLogConsumer(log));
 
     public static final SchemaRegistryContainer SCHEMA_REGISTRY =
             new SchemaRegistryContainer(CONFLUENT_PLATFORM_VERSION)

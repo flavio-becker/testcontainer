@@ -28,12 +28,6 @@ public abstract class DynamoDBDao<T, ID> implements GenericDao<T, ID> {
     }
 
     @Override
-    public List<T> findAll() {
-        DynamoDBMapper mapper = new DynamoDBMapper(amazonDynamoDB);
-        return mapper.scan(instanceClass, new DynamoDBScanExpression());
-    }
-
-    @Override
     public Optional<T> findById(ID id) {
         DynamoDBMapper mapper = new DynamoDBMapper(amazonDynamoDB);
 
@@ -56,17 +50,5 @@ public abstract class DynamoDBDao<T, ID> implements GenericDao<T, ID> {
     public void delete(T entity) {
         DynamoDBMapper mapper= new DynamoDBMapper(amazonDynamoDB);
         mapper.delete(entity);
-    }
-
-
-    public void deleteAll() {
-        List<String> activeProfiles = Arrays.stream(env.getActiveProfiles()).toList();
-        if(activeProfiles.contains("test")) {
-            List<T> entities = findAll();
-            if(! CollectionUtils.isEmpty(entities)) {
-                log.info("Cleaning entity table");
-                entities.forEach(this::delete);
-            }
-        }
     }
 }
