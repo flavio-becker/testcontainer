@@ -10,7 +10,7 @@ public class MessageSender {
 
     private final QueueMessagingTemplate sqsTemplate;
 
-    public void publish(String queueName, Message message) {
+    public void publish(String queueName, MessageValor message) {
         sqsTemplate.convertAndSend(queueName, message);
     }
 }

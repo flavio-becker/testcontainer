@@ -1,14 +1,14 @@
 package com.testcontainers.adapters.config;
 
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
+import software.amazon.awssdk.regions.Region;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
+
+import java.net.URI;
 
 @Profile({ "!test" })
 @Configuration
@@ -27,18 +27,11 @@ public class DynamoDBConfig {
     private String region;
 
     @Bean
-    AmazonDynamoDB amazonDynamoDB() {
-
-        return  AmazonDynamoDBClientBuilder.standard()
-                .withEndpointConfiguration(
-                        new AwsClientBuilder.EndpointConfiguration(amazonDynamoDBEndpoint, region))
+    public DynamoDbClient dynamoDbClient() {
+        return DynamoDbClient.builder()
+                .region(Region.of(region))
+                .credentialsProvider(() -> AwsBasicCredentials.create(amazonAWSAccessKey, amazonAWSSecretKey))
+                .endpointOverride(URI.create(amazonDynamoDBEndpoint))
                 .build();
-    }
-
-    @Bean
-    AWSCredentials amazonAWSCredentials() {
-        return new BasicAWSCredentials(
-                amazonAWSAccessKey, amazonAWSSecretKey);
-
     }
 }

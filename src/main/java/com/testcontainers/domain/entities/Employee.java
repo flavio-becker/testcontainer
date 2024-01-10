@@ -1,38 +1,42 @@
 package com.testcontainers.domain.entities;
 
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBAttribute;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBHashKey;
-import com.amazonaws.services.dynamodbv2.datamodeling.DynamoDBTable;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.With;
 
-@DynamoDBTable(tableName = "Employees")
-@Builder
+import lombok.*;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
+
 @With
+@Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@DynamoDbBean
 public class Employee {
 
     private String id;
-
     private String firstname;
     private String saldo;
 
-
-    @DynamoDBHashKey
-    @DynamoDBAttribute(attributeName = "Id")
+    @DynamoDbPartitionKey
     public String getId() {
         return id;
     }
 
-    @DynamoDBAttribute(attributeName = "Firstname")
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    @DynamoDbAttribute("Firstname")
     public String getFirstname() {
         return firstname;
     }
 
-    @DynamoDBAttribute(attributeName = "Saldo")
+    public void setFirstname(String firstname) {
+        this.firstname = firstname;
+    }
+
+    @DynamoDbAttribute("Saldo")
     public String getSaldo() {
         return saldo;
     }
@@ -40,14 +44,4 @@ public class Employee {
     public void setSaldo(String saldo) {
         this.saldo = saldo;
     }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public void setFirstname(String firstname) {
-        this.firstname = firstname;
-    }
 }
-
-

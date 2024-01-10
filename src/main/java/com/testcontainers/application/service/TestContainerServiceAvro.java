@@ -2,6 +2,8 @@ package com.testcontainers.application.service;
 
 import com.testcontainers.adapters.persistence.dao.EmployeeDao;
 import com.testcontainers.adapters.producer.TestProducer;
+import com.testcontainers.adapters.sqs.MessageSender;
+import com.testcontainers.adapters.sqs.MessageValor;
 import com.testcontainers.avro.ModeloAvro1;
 import com.testcontainers.domain.entities.Employee;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +19,7 @@ public class TestContainerServiceAvro {
 
     private final TestProducer producer;
     private final EmployeeDao employeeDao;
+    private final MessageSender messageSender;
 
     public void execute(ModeloAvro1 employee) {
 
@@ -42,6 +45,8 @@ public class TestContainerServiceAvro {
                 .setDescricao(employeeOptional.map(Employee::getFirstname).orElse("Sem nome"))
                 .build();
 
+        MessageValor messageValor = new MessageValor(UUID.randomUUID(), employee2.getDescricao());
+        messageSender.publish("fila", messageValor);
         producer.send(employee2, "employee_Topico");
     }
 }

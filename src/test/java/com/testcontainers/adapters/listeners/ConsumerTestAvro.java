@@ -48,7 +48,6 @@ class ConsumerTestAvro {
 
         employeeDao.save(employeeSavedynamo);
 
-
         ModeloAvro1 modeloAvro1 = ModeloAvro1.newBuilder()
                 .setId(ID)
                 .setDescricao("")
