@@ -6,7 +6,10 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.services.sqs.AmazonSQSAsync;
 import com.amazonaws.services.sqs.AmazonSQSAsyncClientBuilder;
+import com.amazonaws.services.sqs.model.CreateQueueRequest;
+import com.amazonaws.services.sqs.model.CreateQueueResult;
 import com.testcontainers.domain.entities.Employee;
+import io.awspring.cloud.core.env.ResourceIdResolver;
 import io.awspring.cloud.messaging.core.QueueMessagingTemplate;
 import io.awspring.cloud.messaging.listener.SimpleMessageListenerContainer;
 import io.awspring.cloud.messaging.support.destination.DynamicQueueUrlDestinationResolver;
@@ -46,10 +49,7 @@ import static org.testcontainers.containers.localstack.LocalStackContainer.Servi
 @Slf4j
 public class AWSLocalstackTestcontainers implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
-    @Autowired
-    DynamoDbClient dynamoDbClient;
-
-    static LocalStackContainer localStackContainer = new LocalStackContainer(DockerImageName.parse("localstack/localstack:2.0.0"))
+    public static LocalStackContainer localStackContainer = new LocalStackContainer(DockerImageName.parse("localstack/localstack:2.0.0"))
             .withServices(SQS, LocalStackContainer.Service.DYNAMODB)
             .withExposedPorts(4566, 4569)
             .withEnv("LOCALSTACK_HOST", "localhost")
@@ -84,8 +84,8 @@ public class AWSLocalstackTestcontainers implements ApplicationContextInitialize
                 "spring.cloud.aws.credentials.access-key=" + localStackContainer.getAccessKey(),
                 "spring.cloud.aws.credentials.secret-key=" + localStackContainer.getSecretKey(),
                 "spring.cloud.aws.sqs.endpoint=" + localStackContainer.getEndpointOverride(SQS).toString(),
-                "cloud.aws.sqs.default.queue.message.handler.enabled=" + "true",
-                "cloud.aws.sqs.listener.auto-startup = true",
+                "spring.cloud.aws.sqs.default.queue.message.handler.enabled=" + "true",
+                "spring.cloud.aws.sqs.listener.auto-startup=" + "true",
                 "cloud.aws.sqs.endpoint=" + localStackContainer.getEndpointOverride(SQS).toString()
 
         ).applyTo(ctx.getEnvironment());
@@ -109,14 +109,14 @@ public class AWSLocalstackTestcontainers implements ApplicationContextInitialize
                             new AwsClientBuilder.EndpointConfiguration(
                                     endpointUrl,
                                     localStackContainer.getRegion()))
-                    .withClientConfiguration(new ClientConfiguration().withRequestTimeout(50000)) // Ajuste conforme necessário
-                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey))) // Substitua com suas credenciais
+                    .withClientConfiguration(new ClientConfiguration().withRequestTimeout(50000))
+                    .withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(accessKey, secretKey)))
                     .build();
 
             // Criar a fila SQS
-//            String queueName = "fila";
-//            CreateQueueResult queueResult = sqsAsync.createQueue(new CreateQueueRequest(queueName));
-//            log.info("Fila SQS criada com sucesso: {}", queueResult);
+            String queueName = "fila";
+            CreateQueueResult queueResult = sqsAsync.createQueue(new CreateQueueRequest(queueName));
+            log.info("Fila SQS criada com sucesso: {}", queueResult);
 
             return sqsAsync;
         }
@@ -125,25 +125,6 @@ public class AWSLocalstackTestcontainers implements ApplicationContextInitialize
         @Bean
         public QueueMessagingTemplate queueMessagingTemplate(AmazonSQSAsync amazonSQSAsync) {
             return new QueueMessagingTemplate(amazonSQSAsync);
-        }
-    }
-
-    @Configuration
-    @Profile("test")
-    static class DynamoDbTestConfig {
-
-        @Bean
-        public DynamoDbEnhancedClient dynamoDbEnhancedClient(DynamoDbClient dynamoDbClient) {
-            return DynamoDbEnhancedClient.builder().dynamoDbClient(dynamoDbClient).build();
-        }
-
-        @Bean
-        public DynamoDbClient dynamoDbClient() {
-            return DynamoDbClient.builder()
-                    .region(Region.of(localStackContainer.getRegion())) // Substitua pela região desejada
-                    .credentialsProvider(() -> AwsBasicCredentials.create(localStackContainer.getAccessKey(), localStackContainer.getSecretKey()))
-                    .endpointOverride(localStackContainer.getEndpointOverride(DYNAMODB))
-                    .build();
         }
 
         @Bean
@@ -164,15 +145,33 @@ public class AWSLocalstackTestcontainers implements ApplicationContextInitialize
          * a SQS queue in case it does not exist
          */
         @Bean
-        public DestinationResolver<String> autoCreateQueueDestinationResolver(
-                AmazonSQSAsync sqs,
-                @Autowired(required = false) ResourceIdResolver resourceIdResolver) {
+        public DestinationResolver<String> autoCreateQueueDestinationResolver(AmazonSQSAsync sqs,
+                                                                              @Autowired(required = false) ResourceIdResolver resourceIdResolver) {
 
             DynamicQueueUrlDestinationResolver autoCreateQueueResolver
                     = new DynamicQueueUrlDestinationResolver(sqs, resourceIdResolver);
             autoCreateQueueResolver.setAutoCreate(true);
 
             return new CachingDestinationResolverProxy<>(autoCreateQueueResolver);
+        }
+    }
+
+    @Configuration
+    @Profile("test")
+    static class DynamoDbTestConfig {
+
+        @Bean
+        public DynamoDbEnhancedClient dynamoDbEnhancedClient(DynamoDbClient dynamoDbClient) {
+            return DynamoDbEnhancedClient.builder().dynamoDbClient(dynamoDbClient).build();
+        }
+
+        @Bean
+        public DynamoDbClient dynamoDbClient() {
+            return DynamoDbClient.builder()
+                    .region(Region.of(localStackContainer.getRegion())) // Substitua pela região desejada
+                    .credentialsProvider(() -> AwsBasicCredentials.create(localStackContainer.getAccessKey(), localStackContainer.getSecretKey()))
+                    .endpointOverride(localStackContainer.getEndpointOverride(DYNAMODB))
+                    .build();
         }
 
         @Bean
