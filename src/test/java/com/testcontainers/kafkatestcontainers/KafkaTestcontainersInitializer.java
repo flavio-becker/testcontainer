@@ -1,9 +1,14 @@
 package com.testcontainers.kafkatestcontainers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
@@ -13,6 +18,8 @@ import org.testcontainers.lifecycle.Startables;
 import org.testcontainers.utility.DockerImageName;
 
 import java.time.Duration;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 public class KafkaTestcontainersInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
@@ -92,4 +99,16 @@ public class KafkaTestcontainersInitializer implements ApplicationContextInitial
 
         ).applyTo(ctx.getEnvironment());
     }
+
+    @Bean
+    public ConsumerFactory<String, String> consumerFactory(KafkaContainer kafkaContainer) {
+        Map<String, Object> properties = new HashMap<>();
+        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
+        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "test-group");
+        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+
+        return new DefaultKafkaConsumerFactory<>(properties);
+    }
+
 }
