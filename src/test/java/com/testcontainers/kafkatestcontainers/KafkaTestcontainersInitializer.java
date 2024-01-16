@@ -100,15 +100,15 @@ public class KafkaTestcontainersInitializer implements ApplicationContextInitial
         ).applyTo(ctx.getEnvironment());
     }
 
-    @Bean
-    public ConsumerFactory<String, String> consumerFactory(KafkaContainer kafkaContainer) {
-        Map<String, Object> properties = new HashMap<>();
-        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
-        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "test-group");
-        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
-
-        return new DefaultKafkaConsumerFactory<>(properties);
-    }
+//    @Bean
+//    public ConsumerFactory<String, String> consumerFactory(KafkaContainer kafkaContainer) {
+//        Map<String, Object> properties = new HashMap<>();
+//        properties.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaContainer.getBootstrapServers());
+//        properties.put(ConsumerConfig.GROUP_ID_CONFIG, "test-group");
+//        properties.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+//        properties.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+//
+//        return new DefaultKafkaConsumerFactory<>(properties);
+//    }
 
 }

@@ -18,7 +18,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.testcontainers.kafkatestcontainers.KafkaTestcontainersInitializer.KAFKA;
 import static com.testcontainers.kafkatestcontainers.KafkaTestcontainersInitializer.SCHEMA_REGISTRY;
@@ -61,7 +64,7 @@ class ConsumerTestAvro extends AWSLocalstackTestcontainers {
                 .build();
 
         //WHEN
-        kafkaProducerTester.sendMessage(modeloAvro1, "topico");
+        kafkaProducerTester.sendMessage(modeloAvro1, "topico", getHeaders());
 
         //THEN
         KafkaTestConsumerAvro kafkaTestConsumer =
@@ -83,7 +86,8 @@ class ConsumerTestAvro extends AWSLocalstackTestcontainers {
         });
 
         // Verifica a mensagem no SQS
-        String sqsQueueUrl = localStackContainer.getEndpointOverride(SQS).toString() + "/queue/fila";;
+        String sqsQueueUrl = localStackContainer.getEndpointOverride(SQS).toString() + "/queue/fila";
+        ;
 
         ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(sqsQueueUrl)
                 .withMaxNumberOfMessages(1)
@@ -91,6 +95,14 @@ class ConsumerTestAvro extends AWSLocalstackTestcontainers {
 
         List<Message> messages = amazonSQSAsync.receiveMessage(receiveMessageRequest).getMessages();
         Assertions.assertThat(messages).hasSize(1);
+    }
+
+    public Map<String, byte[]> getHeaders() {
+
+        Map<String, byte[]> headers = new HashMap<>();
+        headers.put("source", "HeadersTeste".getBytes(StandardCharsets.UTF_8));
+        
+        return headers;
     }
 
 }
