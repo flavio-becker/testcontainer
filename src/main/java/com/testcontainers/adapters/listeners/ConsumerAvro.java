@@ -25,4 +25,9 @@ public class ConsumerAvro {
         containerService.execute(modeloAvro1);
 
     }
+
+    private void logaInformacao(MessageHeaders headers) {
+
+        logaInformacao(headers);
+    }
 }

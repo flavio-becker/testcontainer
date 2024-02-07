@@ -30,6 +30,9 @@ import org.springframework.messaging.core.DestinationResolver;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.localstack.LocalStackContainer;
 import org.testcontainers.containers.output.Slf4jLogConsumer;
+import org.testcontainers.images.AbstractImagePullPolicy;
+import org.testcontainers.images.ImageData;
+import org.testcontainers.images.ImagePullPolicy;
 import org.testcontainers.utility.DockerImageName;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
@@ -52,6 +55,10 @@ public class AWSLocalstackTestcontainers implements ApplicationContextInitialize
     public static LocalStackContainer localStackContainer = new LocalStackContainer(DockerImageName.parse("localstack/localstack:2.0.0"))
             .withServices(SQS, LocalStackContainer.Service.DYNAMODB)
             .withExposedPorts(4566, 4569)
+            .withEnv("USE_SSL", "false")  // Desativa SSL para simplificar
+            .withEnv("LOCALSTACK_HOSTNAME", "localhost")
+            .withEnv("HOSTNAME_EXTERNAL", "localstack")
+            .withEnv("LOCALSTACK_HTTP_PORT", "4566")
             .withEnv("LOCALSTACK_HOST", "localhost")
             .withNetworkAliases("localstack")
             .withNetwork(Network.builder().createNetworkCmdModifier(cmd -> cmd.withName("test-net")).build())
@@ -127,33 +134,33 @@ public class AWSLocalstackTestcontainers implements ApplicationContextInitialize
             return new QueueMessagingTemplate(amazonSQSAsync);
         }
 
-        @Bean
-        public BeanPostProcessor simpleMessageListenerContainerPostProcessor(DestinationResolver<String> destinationResolver) {
-            return new BeanPostProcessor() {
-                @Override
-                public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
-                    if (bean instanceof SimpleMessageListenerContainer container) {
-                        container.setDestinationResolver(destinationResolver);
-                    }
-                    return bean;
-                }
-            };
-        }
-
-        /**
-         * Creates a DynamicQueueUrlDestinationResolver capable of auto-creating
-         * a SQS queue in case it does not exist
-         */
-        @Bean
-        public DestinationResolver<String> autoCreateQueueDestinationResolver(AmazonSQSAsync sqs,
-                                                                              @Autowired(required = false) ResourceIdResolver resourceIdResolver) {
-
-            DynamicQueueUrlDestinationResolver autoCreateQueueResolver
-                    = new DynamicQueueUrlDestinationResolver(sqs, resourceIdResolver);
-            autoCreateQueueResolver.setAutoCreate(true);
-
-            return new CachingDestinationResolverProxy<>(autoCreateQueueResolver);
-        }
+//        @Bean
+//        public BeanPostProcessor simpleMessageListenerContainerPostProcessor(DestinationResolver<String> destinationResolver) {
+//            return new BeanPostProcessor() {
+//                @Override
+//                public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+//                    if (bean instanceof SimpleMessageListenerContainer container) {
+//                        container.setDestinationResolver(destinationResolver);
+//                    }
+//                    return bean;
+//                }
+//            };
+//        }
+//
+//        /**
+//         * Creates a DynamicQueueUrlDestinationResolver capable of auto-creating
+//         * a SQS queue in case it does not exist
+//         */
+//        @Bean
+//        public DestinationResolver<String> autoCreateQueueDestinationResolver(AmazonSQSAsync sqs,
+//                                                                              @Autowired(required = false) ResourceIdResolver resourceIdResolver) {
+//
+//            DynamicQueueUrlDestinationResolver autoCreateQueueResolver
+//                    = new DynamicQueueUrlDestinationResolver(sqs, resourceIdResolver);
+//            autoCreateQueueResolver.setAutoCreate(true);
+//
+//            return new CachingDestinationResolverProxy<>(autoCreateQueueResolver);
+//        }
     }
 
     @Configuration

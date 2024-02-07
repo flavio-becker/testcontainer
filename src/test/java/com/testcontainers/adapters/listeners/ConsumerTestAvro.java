@@ -8,7 +8,6 @@ import com.testcontainers.avro.ModeloAvro1;
 import com.testcontainers.awstestcontainers.AWSLocalstackTestcontainers;
 import com.testcontainers.domain.entities.Employee;
 import com.testcontainers.kafkatestcontainers.EnableKafkaTestcontainers;
-import org.apache.avro.generic.GenericRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -60,34 +59,32 @@ class ConsumerTestAvro extends AWSLocalstackTestcontainers {
 
         ModeloAvro1 modeloAvro1 = ModeloAvro1.newBuilder()
                 .setId(ID)
-                .setDescricao("")
+                .setDescricao("Testeintegration")
                 .build();
 
         //WHEN
         kafkaProducerTester.sendMessage(modeloAvro1, "topico", getHeaders());
 
         //THEN
-        KafkaTestConsumerAvro kafkaTestConsumer =
+        KafkaTestConsumerAvro<ModeloAvro1> kafkaTestConsumer =
                 new KafkaTestConsumerAvro(KAFKA.getBootstrapServers(), "test", SCHEMA_REGISTRY.getSchemaUrl());
 
         kafkaTestConsumer.subscribe(singletonList("employee_Topico"));
 
-        ConsumerRecords<String, GenericRecord> records = kafkaTestConsumer.poll();
+        ConsumerRecords<String, ModeloAvro1> records = kafkaTestConsumer.poll();
 
         Assertions.assertThat(records.count())
                 .isEqualTo(1);
 
 
-        records.iterator().forEachRemaining(record -> {
-            if (record.value() instanceof ModeloAvro1 avro1) {
-                Assertions.assertThat(avro1.getDescricao())
-                        .isEqualTo(FIRSTNAME);
-            }
+        records.forEach(record -> {
+            Assertions.assertThat(record.value())
+                    .usingRecursiveComparison()
+                    .isEqualTo(getModeloAvroteste());
         });
 
         // Verifica a mensagem no SQS
         String sqsQueueUrl = localStackContainer.getEndpointOverride(SQS).toString() + "/queue/fila";
-        ;
 
         ReceiveMessageRequest receiveMessageRequest = new ReceiveMessageRequest(sqsQueueUrl)
                 .withMaxNumberOfMessages(1)
@@ -97,11 +94,21 @@ class ConsumerTestAvro extends AWSLocalstackTestcontainers {
         Assertions.assertThat(messages).hasSize(1);
     }
 
+    private ModeloAvro1 getModeloAvroteste() {
+        final String ID = "9999";
+
+        return ModeloAvro1.newBuilder()
+                .setId(ID)
+                .setDescricao("Flavio121212")
+                .build();
+
+    }
+
     public Map<String, byte[]> getHeaders() {
 
         Map<String, byte[]> headers = new HashMap<>();
         headers.put("source", "HeadersTeste".getBytes(StandardCharsets.UTF_8));
-        
+
         return headers;
     }
 
